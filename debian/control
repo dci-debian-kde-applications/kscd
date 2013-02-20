@@ -1,0 +1,25 @@
+Source: kscd
+Section: kde
+Priority: optional
+Maintainer: Debian Qt/KDE Maintainers <debian-qt-kde@lists.debian.org>
+Uploaders: Pino Toscano <pino@debian.org>
+Build-Depends: kde-sc-dev-latest (>= 4:4.8.4),
+ cmake, debhelper (>= 7.3.16), pkg-kde-tools (>= 0.12),
+ kdelibs5-dev (>= 4:4.8), libphonon-dev,
+ libasound2-dev [linux-any],
+ libmusicbrainz3-dev,
+Standards-Version: 3.9.3
+Homepage: http://www.kde.org/
+Vcs-Browser: http://git.debian.org/?p=pkg-kde/kde-sc/kscd.git
+Vcs-Git: git://git.debian.org/pkg-kde/kde-sc/kscd.git
+
+Package: kscd
+Section: sound
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Suggests: kde-config-cddb
+Description: audio CD player
+ KsCD is an audio CD player.  It uses the Compact Disc DataBase to
+ fetch album information automatically.
+ .
+ This package is part of the KDE multimedia module.
