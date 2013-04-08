@@ -1,6 +1,6 @@
-kscd (4:4.10.2-0r1) UNRELEASED; urgency=low
+kscd (4:4.10.2-1) experimental; urgency=low
 
   [ Pino Toscano ]
   * Initial packaging.
 
- -- Debian Qt/KDE Maintainers <debian-qt-kde@lists.debian.org>  Wed, 20 Feb 2013 10:56:28 +0100
+ -- Sune Vuorela <sune@debian.org>  Mon, 08 Apr 2013 19:19:58 +0000
