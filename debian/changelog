@@ -1,9 +1,12 @@
-kscd (4:4.10.2-2) UNRELEASED; urgency=low
+kscd (4:4.10.3-1) UNRELEASED; urgency=low
 
   [ Pino Toscano ]
   * Bump the kde-sc-dev-latest and kdelibs5-dev build dependencies to 4.10.
 
- -- Debian Qt/KDE Maintainers <debian-qt-kde@lists.debian.org>  Fri, 12 Apr 2013 12:25:42 +0200
+  [ Maximiliano Curia ]
+  * New upstream release.
+
+ -- Maximiliano Curia <maxy@debian.org>  Sat, 25 May 2013 21:48:26 +0200
 
 kscd (4:4.10.2-1) experimental; urgency=low
 
