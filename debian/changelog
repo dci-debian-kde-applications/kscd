@@ -1,6 +1,7 @@
 kscd (4:4.11.1-0r0) UNRELEASED; urgency=low
 
   * New upstream release.
+  * Enable auto tests.
 
  -- Maximiliano Curia <maxy@debian.org>  Tue, 03 Sep 2013 20:17:24 +0200
 
