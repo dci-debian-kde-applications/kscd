@@ -1,9 +1,9 @@
-kscd (4:4.11.3-1) UNRELEASED; urgency=low
+kscd (4:4.11.3-1) unstable; urgency=low
 
   * New upstream release.
   * Update build dependencies.
 
- -- Maximiliano Curia <maxy@debian.org>  Fri, 08 Nov 2013 11:29:03 +0100
+ -- Maximiliano Curia <maxy@debian.org>  Fri, 08 Nov 2013 12:17:27 +0100
 
 kscd (4:4.11.2-1) experimental; urgency=low
 
