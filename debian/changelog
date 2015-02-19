@@ -1,6 +1,7 @@
 kscd (4:14.12.2-1~) UNRELEASED; urgency=medium
 
   * Prepare Debian release.
+  * Bump Standards-Version to 3.9.6, no changes needed.
 
  -- Maximiliano Curia <maxy@debian.org>  Thu, 19 Feb 2015 11:49:22 +0100
 
