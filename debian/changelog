@@ -19,11 +19,11 @@ kscd (4:14.12.0-0ubuntu1) vivid; urgency=medium
 
 kscd (4:14.11.97-0ubuntu1) vivid; urgency=medium
 
-  * Initial release for KDE applications 14.12 series 
+  * Initial release for KDE applications 14.12 series
    - Change maintainer to Debian/Kubuntu
-   - Fix Watch file applications locations 
+   - Fix Watch file applications locations
    - Fix VCS for new kde-applications location
-  * Debian merge, no remaining changes. 
+  * Debian merge, no remaining changes.
 
  -- Scarlett Clark <sgclark@kubuntu.org>  Mon, 01 Dec 2014 15:20:28 +0000
 
@@ -358,4 +358,3 @@ kscd (4:4.8.80-0ubuntu1) quantal; urgency=low
   * New upstream release
 
  -- Jonathan Riddell <jriddell@ubuntu.com>  Wed, 06 Jun 2012 14:16:02 +0100
-
