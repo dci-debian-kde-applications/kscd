@@ -1,8 +1,10 @@
-kscd (4:15.04.2-0ubuntu1) wily; urgency=medium
+kscd (4:15.07.90-0ubuntu1) UNRELEASED; urgency=medium
 
-  [ Scarlett Clark ]
-  * New upstream release
-  * New upstream release
+  * New upstream beta release
+
+ -- Jonathan Riddell <jriddell@ubuntu.com>  Thu, 13 Aug 2015 22:31:07 +0100
+
+kscd (4:15.04.2-0ubuntu1) wily; urgency=medium
 
   [ Jonathan Riddell ]
   * New upstream release
