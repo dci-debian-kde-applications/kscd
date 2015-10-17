@@ -1,9 +1,10 @@
-kscd (4:15.08.1-0ubuntu1) UNRELEASED; urgency=medium
+kscd (4:15.08.2-0ubuntu1) UNRELEASED; urgency=medium
 
   * New upstream release
   * Vivid backport
+  * Vivid backport
 
- -- Scarlett Clark <sgclark@kubuntu.org>  Thu, 01 Oct 2015 11:20:37 -0700
+ -- Scarlett Clark <sgclark@kubuntu.org>  Fri, 16 Oct 2015 23:18:23 -0700
 
 kscd (4:14.12.3-0ubuntu1) vivid; urgency=medium
 
