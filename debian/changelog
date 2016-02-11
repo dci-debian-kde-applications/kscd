@@ -1,8 +1,9 @@
-kscd (4:15.12.0-0ubuntu1) UNRELEASED; urgency=medium
+kscd (4:15.12.1-0ubuntu1) UNRELEASED; urgency=medium
 
+  * Merged with Debian
   * New upstream release
 
- -- Clive Johnston <clivejo@aol.com>  Sat, 02 Jan 2016 14:14:54 +0000
+ -- Clive Johnston <clivejo@aol.com>  Thu, 11 Feb 2016 12:17:45 +0000
 
 kscd (4:15.08.2-0ubuntu1) wily; urgency=medium
 
@@ -15,6 +16,12 @@ kscd (4:15.08.1-0ubuntu1) wily; urgency=medium
   * New upstream release (15.08.1)
 
  -- Clive Johnston <clivejo@aol.com>  Tue, 22 Sep 2015 17:21:58 +0100
+
+kscd (4:15.08.0-1) unstable; urgency=medium
+
+  * New upstream release (15.08.0).
+
+ -- Maximiliano Curia <maxy@debian.org>  Sat, 19 Sep 2015 19:10:55 +0200
 
 kscd (4:15.08.0-0ubuntu1) wily; urgency=medium
 
@@ -41,6 +48,13 @@ kscd (4:14.12.3-0ubuntu1) vivid; urgency=medium
 
  -- Scarlett Clark <sgclark@kubuntu.org>  Fri, 13 Mar 2015 14:05:14 -0700
 
+kscd (4:14.12.2-1) experimental; urgency=medium
+
+  * Prepare Debian release.
+  * Bump Standards-Version to 3.9.6, no changes needed.
+
+ -- Maximiliano Curia <maxy@debian.org>  Thu, 19 Feb 2015 12:01:32 +0100
+
 kscd (4:14.12.2-0ubuntu1) vivid; urgency=medium
 
   * New upstream release
@@ -56,11 +70,11 @@ kscd (4:14.12.0-0ubuntu1) vivid; urgency=medium
 
 kscd (4:14.11.97-0ubuntu1) vivid; urgency=medium
 
-  * Initial release for KDE applications 14.12 series 
+  * Initial release for KDE applications 14.12 series
    - Change maintainer to Debian/Kubuntu
-   - Fix Watch file applications locations 
+   - Fix Watch file applications locations
    - Fix VCS for new kde-applications location
-  * Debian merge, no remaining changes. 
+  * Debian merge, no remaining changes.
 
  -- Scarlett Clark <sgclark@kubuntu.org>  Mon, 01 Dec 2014 15:20:28 +0000
 
@@ -395,4 +409,3 @@ kscd (4:4.8.80-0ubuntu1) quantal; urgency=low
   * New upstream release
 
  -- Jonathan Riddell <jriddell@ubuntu.com>  Wed, 06 Jun 2012 14:16:02 +0100
-
