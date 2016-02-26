@@ -1,6 +1,7 @@
 kscd (4:15.08.0-2~) UNRELEASED; urgency=medium
 
-  * 
+  * Migrate to musicbrainz5. (Closes: #677252)
+   - New patch: migrate_to_musicbrainz5.diff
 
  -- Maximiliano Curia <maxy@debian.org>  Wed, 24 Feb 2016 10:46:44 +0100
 
