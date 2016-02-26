@@ -78,8 +78,8 @@ Index: kscd/cmake/FindMusicBrainz5.cmake
 Index: kscd/mbmanager.cpp
 ===================================================================
 --- kscd.orig/mbmanager.cpp	2016-02-24 10:49:17.784100253 +0100
-+++ kscd/mbmanager.cpp	2016-02-26 12:51:28.125622263 +0100
-@@ -34,162 +34,232 @@
++++ kscd/mbmanager.cpp	2016-02-26 21:29:28.757605280 +0100
+@@ -34,162 +34,244 @@
  
  #include <ktoolinvocation.h>
  
@@ -112,12 +112,12 @@ Index: kscd/mbmanager.cpp
 +{
 +    QString title;
 +    if (! release) return title;
-+
+ 
 +    title = QString::fromUtf8(release->Title().c_str());
 +    if (medium && release->MediumList()->NumItems() > 1) {
 +	title = i18n("%1 (disc %2)", title, medium->Position());
 +    }
- 
++
 +    return title;
  }
  
@@ -268,17 +268,42 @@ Index: kscd/mbmanager.cpp
 -	emit discLookupFinished();
 +    MusicBrainz5::CArtistCredit *artistCredit = release->ArtistCredit();
 +    return getArtistFromArtistCredit(artistCredit);
++}
++
++static QList<MBTrackInfo> unknownTracks(QString &discArtist, DiscId *m_discid)
++{
++    QList<MBTrackInfo> tracks;
++    MBTrackInfo track;
++    for (int j = 1; j < discid_get_first_track_num(m_discid); j++) {
++	track.Title = i18n("Unknown title");
++	track.Artist = discArtist;
++	// Not an audio track
++	track.Duration = 0;
++
++	tracks << track;
++    }
++    for (int j = discid_get_first_track_num(m_discid); j <= discid_get_last_track_num(m_discid); j++)
++    {
++	track.Title = i18n("Unknown title");
++	track.Artist = discArtist;
++	// time from mb library in sectors, 75 sectors = 1 second
++	track.Duration = discid_get_track_length(m_discid, j) * 1000 / 75;
++
++	tracks << track;
++    }
++
++    return tracks;
  }
  
 -void MBManager::discUpload()
-+static QList<MBTrackInfo> getTracks(MusicBrainz5::CMedium *medium)
++static QList<MBTrackInfo> getTracks(MusicBrainz5::CMedium *medium, QString &discArtist, DiscId *m_discid)
  {
 -	showArtistLabel(m_discInfo.Artist);
 +    QList<MBTrackInfo> tracks;
 +    if (! medium) return tracks;
 +
 +    MusicBrainz5::CTrackList *trackList = medium->TrackList();
-+    if (! trackList) return tracks;
++    if (! trackList) return unknownTracks(discArtist, m_discid);
 +
 +    MBTrackInfo track;
 +    for (int i = 0; i < trackList->NumItems(); i++) {
@@ -294,7 +319,7 @@ Index: kscd/mbmanager.cpp
 +	else
 +	    track.Title = QString::fromUtf8(itemTrack->Title().c_str());
  
-+	track.Duration = itemTrack->Length() * 1000;
++	track.Duration = itemTrack->Length();
 +
 +	tracks << track;
 +    }
@@ -302,11 +327,11 @@ Index: kscd/mbmanager.cpp
 +    return tracks;
 +}
 +
-+static MusicBrainz5::CRelease *getRelease(MusicBrainz5::CQuery &query, char *discId)
++static MusicBrainz5::CRelease *getRelease(MusicBrainz5::CQuery &query, std::string &discId, MusicBrainz5::CMetadata &metadata, MusicBrainz5::CMetadata &fullMetadata)
 +{
-+    MusicBrainz5::CMetadata metadata = query.Query("discid", discId);
++    metadata = query.Query("discid", discId);
 +    // Check to see how many items were returned from the server
-+    if (!metadata.Disc() || !metadata.Disc()->ReleaseList()) return 0;
++    if (! metadata.Disc() || ! metadata.Disc()->ReleaseList()) return 0;
 +
 +    MusicBrainz5::CReleaseList *results = metadata.Disc()->ReleaseList();
 +
@@ -320,23 +345,25 @@ Index: kscd/mbmanager.cpp
 +    for (int i = 0; i < results->NumItems(); i++) {
 +	MusicBrainz5::CRelease *result = results->Item(i);
 +	MusicBrainz5::CQuery::tParamMap params;
-+	params["inc"] = "artists labels recordings release-groups url-rels"
++	params["inc"] = "artists labels recordings release-groups url-rels "
 +	                "discids artist-credits";
-+	metadata = query.Query("release", result->ID(), "", params);
++	fullMetadata = query.Query("release", result->ID(), "", params);
 +
-+	release = metadata.Release();
++	release = fullMetadata.Release();
 +	if (release) break;
 +    }
 +
 +    return release;
 +}
 +
-+static MusicBrainz5::CMedium *getMedium(MusicBrainz5::CRelease *release, char *discId)
++static MusicBrainz5::CMedium *getMedium(MusicBrainz5::CRelease *release,
++	                                std::string &discId,
++					MusicBrainz5::CMediumList &mediaList)
 +{
 +    if (! release) return 0;
 +
 +    // Find the specific media in the release
-+    MusicBrainz5::CMediumList mediaList = release->MediaMatchingDiscID(discId);
++    mediaList = release->MediaMatchingDiscID(discId);
 +    MusicBrainz5::CMedium* medium = 0;
 +
 +    for (int i = 0; i < mediaList.NumItems(); i++) {
@@ -353,41 +380,41 @@ Index: kscd/mbmanager.cpp
 +    MusicBrainz5::CQuery query("kscd");
 +    int discid_ok = discid_read_sparse(m_discid, qPrintable(device), 0);
 +    if (discid_ok) {
-+	char *discId = discid_get_id(m_discid);
++	std::string discId(discid_get_id(m_discid));
  	try
  	{
 -		MusicBrainz::Disc *disc = MusicBrainz::readDisc();
 -		std::string url = MusicBrainz::getSubmissionUrl(disc);
 -		delete disc;
-+	    MusicBrainz5::CRelease *release = getRelease(query, discId);
-+	    MusicBrainz5::CMedium *medium = getMedium(release, discId);
- 
--		KToolInvocation::invokeBrowser(QString::fromUtf8(url.c_str()));
--	}
--	catch (MusicBrainz::DiscError &e)
--	{
--		kDebug() << "Error: " << e.what();
++	    MusicBrainz5::CMetadata metadata, fullMetadata;
++	    MusicBrainz5::CMediumList mediaList;
++	    MusicBrainz5::CRelease *release = getRelease(query, discId, metadata, fullMetadata);
++	    MusicBrainz5::CMedium *medium = getMedium(release, discId, mediaList);
++
 +	    if (release && medium) {
 +		// Sets info
 +		m_discInfo.Title = getTitle(release, medium);
 +		m_discInfo.Artist = getArtist(release);
 +
-+		m_trackList = getTracks(medium);
++		m_trackList = getTracks(medium, m_discInfo.Artist, m_discid);
 +	    } else {
 +		kDebug() << "This CD was not found.";
 +		m_validInfo = false;
 +	    }
-+
-+	}
+ 
+-		KToolInvocation::invokeBrowser(QString::fromUtf8(url.c_str()));
+ 	}
+-	catch (MusicBrainz::DiscError &e)
 +	catch (MusicBrainz5::CExceptionBase& error)
-+	{
+ 	{
+-		kDebug() << "Error: " << e.what();
 +	    kDebug() << "Connection Exception: '" << error.what() << "'";
 +	    kDebug() << "LastResult: " << query.LastResult();
 +	    kDebug() << "LastHTTPCode: " << query.LastHTTPCode();
 +	    kDebug() << "LastErrorMessage: " << QString::fromUtf8(query.LastErrorMessage().c_str());
 +
 +	    m_validInfo = false;
-+	}
+ 	}
 +	catch (...)
 +	{
 +	    kDebug() << "Caught Unknown Exception:";
@@ -405,26 +432,9 @@ Index: kscd/mbmanager.cpp
 +	m_discInfo.Artist = i18n("Unknown artist");
 +
 +	m_trackList.clear();
-+	MBTrackInfo track;
 +	if (discid_ok) {
-+	    for (int j = 1; j < discid_get_first_track_num(m_discid); j++) {
-+		track.Title = i18n("Unknown title");
-+		track.Artist = m_discInfo.Artist;
-+		// Not an audio track
-+		track.Duration = 0;
-+
-+		m_trackList << track;
-+	    }
-+	    for (int j = discid_get_first_track_num(m_discid); j <= discid_get_last_track_num(m_discid); j++)
-+	    {
-+		track.Title = i18n("Unknown title");
-+		track.Artist = m_discInfo.Artist;
-+		// time from mb library in sectors, 75 sectors = 1 second
-+		track.Duration = discid_get_track_length(m_discid, j) * 1000 / 75;
-+
-+		m_trackList << track;
-+	    }
- 	}
++	    m_trackList = unknownTracks(m_discInfo.Artist, m_discid);
++	}
 +    }
 +
 +    emit discLookupFinished();
