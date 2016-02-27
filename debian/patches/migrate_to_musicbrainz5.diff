@@ -1,7 +1,5 @@
-Index: kscd/CMakeLists.txt
-===================================================================
---- kscd.orig/CMakeLists.txt	2016-02-24 10:49:17.752101549 +0100
-+++ kscd/CMakeLists.txt	2016-02-26 10:37:41.928748427 +0100
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
 @@ -11,13 +11,15 @@
  find_package(Alsa)
  alsa_configure_file(${CMAKE_CURRENT_BINARY_DIR}/config-alsa.h)
@@ -30,10 +28,8 @@ Index: kscd/CMakeLists.txt
      )
  
  ########### install files ###############
-Index: kscd/cmake/FindMusicBrainz5.cmake
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ kscd/cmake/FindMusicBrainz5.cmake	2016-02-24 10:53:31.725820626 +0100
+--- /dev/null
++++ b/cmake/FindMusicBrainz5.cmake
 @@ -0,0 +1,40 @@
 +# Module to find the musicbrainz-5 library
 +#
@@ -75,12 +71,13 @@ Index: kscd/cmake/FindMusicBrainz5.cmake
 +MARK_AS_ADVANCED(MUSICBRAINZ5_INCLUDE_DIR MUSICBRAINZ5_LIBRARIES)
 +
 +
-Index: kscd/mbmanager.cpp
-===================================================================
---- kscd.orig/mbmanager.cpp	2016-02-24 10:49:17.784100253 +0100
-+++ kscd/mbmanager.cpp	2016-02-26 21:29:28.757605280 +0100
-@@ -34,162 +34,244 @@
+--- a/mbmanager.cpp
++++ b/mbmanager.cpp
+@@ -32,164 +32,254 @@
+  */
+ #include "mbmanager.h"
  
++#include <kprotocolmanager.h>
  #include <ktoolinvocation.h>
  
 -#include <musicbrainz3/musicbrainz.h>
@@ -293,12 +290,10 @@ Index: kscd/mbmanager.cpp
 +    }
 +
 +    return tracks;
- }
- 
--void MBManager::discUpload()
++}
++
 +static QList<MBTrackInfo> getTracks(MusicBrainz5::CMedium *medium, QString &discArtist, DiscId *m_discid)
- {
--	showArtistLabel(m_discInfo.Artist);
++{
 +    QList<MBTrackInfo> tracks;
 +    if (! medium) return tracks;
 +
@@ -318,7 +313,7 @@ Index: kscd/mbmanager.cpp
 +	    track.Title = QString::fromUtf8(recording->Title().c_str());
 +	else
 +	    track.Title = QString::fromUtf8(itemTrack->Title().c_str());
- 
++
 +	track.Duration = itemTrack->Length();
 +
 +	tracks << track;
@@ -372,12 +367,21 @@ Index: kscd/mbmanager.cpp
 +    }
 +
 +    return medium;
-+}
-+
+ }
+ 
+-void MBManager::discUpload()
 +void MBManager::discLookup(const QString &device)
-+{
+ {
+-	showArtistLabel(m_discInfo.Artist);
 +    m_validInfo = true;
 +    MusicBrainz5::CQuery query("kscd");
+ 
++    if( KProtocolManager::useProxy() ) {
++	KUrl proxy = KProtocolManager::proxyFor("http");
++	query.SetProxyHost(proxy.host().toLatin1().constData());
++	query.SetProxyPort(proxy.port());
++    }
++
 +    int discid_ok = discid_read_sparse(m_discid, qPrintable(device), 0);
 +    if (discid_ok) {
 +	std::string discId(discid_get_id(m_discid));
@@ -401,25 +405,25 @@ Index: kscd/mbmanager.cpp
 +		kDebug() << "This CD was not found.";
 +		m_validInfo = false;
 +	    }
- 
--		KToolInvocation::invokeBrowser(QString::fromUtf8(url.c_str()));
- 	}
--	catch (MusicBrainz::DiscError &e)
++
++	}
 +	catch (MusicBrainz5::CExceptionBase& error)
- 	{
--		kDebug() << "Error: " << e.what();
++	{
 +	    kDebug() << "Connection Exception: '" << error.what() << "'";
 +	    kDebug() << "LastResult: " << query.LastResult();
 +	    kDebug() << "LastHTTPCode: " << query.LastHTTPCode();
 +	    kDebug() << "LastErrorMessage: " << QString::fromUtf8(query.LastErrorMessage().c_str());
-+
+ 
+-		KToolInvocation::invokeBrowser(QString::fromUtf8(url.c_str()));
 +	    m_validInfo = false;
  	}
+-	catch (MusicBrainz::DiscError &e)
 +	catch (...)
-+	{
+ 	{
+-		kDebug() << "Error: " << e.what();
 +	    kDebug() << "Caught Unknown Exception:";
 +	    m_validInfo = false;
-+	}
+ 	}
 +    } else {
 +	m_validInfo = false;
 +    }
@@ -453,10 +457,8 @@ Index: kscd/mbmanager.cpp
 +	kDebug() << "Error: " << discid_get_error_msg(m_discid);
 +    }
 +}
-Index: kscd/mbmanager.h
-===================================================================
---- kscd.orig/mbmanager.h	2016-02-24 10:49:17.784100253 +0100
-+++ kscd/mbmanager.h	2016-02-26 09:58:02.260954124 +0100
+--- a/mbmanager.h
++++ b/mbmanager.h
 @@ -42,6 +42,9 @@
  #include <qstring.h>
  #include <qlist.h>
@@ -489,10 +491,8 @@ Index: kscd/mbmanager.h
  	void discLookupFinished();
  };
  
-Index: kscd/kscd.cpp
-===================================================================
---- kscd.orig/kscd.cpp	2016-02-24 10:49:17.784100253 +0100
-+++ kscd/kscd.cpp	2016-02-26 10:27:17.906046898 +0100
+--- a/kscd.cpp
++++ b/kscd.cpp
 @@ -114,7 +114,7 @@
  	m_uploadAction = m_actions->addAction( QLatin1String( "Upload Info" ));
  	m_uploadAction->setText(i18n("Upload Info"));
@@ -514,10 +514,8 @@ Index: kscd/kscd.cpp
  void KSCD::discLookupFinished()
  {
  	// If the track dialog is open, refresh it
-Index: kscd/cmake/FindDiscId.cmake
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ kscd/cmake/FindDiscId.cmake	2016-02-26 10:35:57.080998098 +0100
+--- /dev/null
++++ b/cmake/FindDiscId.cmake
 @@ -0,0 +1,40 @@
 +# Module to find the discid library
 +#
@@ -559,10 +557,8 @@ Index: kscd/cmake/FindDiscId.cmake
 +MARK_AS_ADVANCED(DISCID_INCLUDE_DIR DISCID_LIBRARIES)
 +
 +
-Index: kscd/kscd.h
-===================================================================
---- kscd.orig/kscd.h	2016-02-26 11:55:19.290865744 +0100
-+++ kscd/kscd.h	2016-02-26 10:28:03.112213718 +0100
+--- a/kscd.h
++++ b/kscd.h
 @@ -131,6 +131,7 @@
  	void configureKeys();
  
