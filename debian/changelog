@@ -1,10 +1,6 @@
-kscd (4:15.08.0-3~3.gbpb66ece) UNRELEASED; urgency=medium
-
-  ** SNAPSHOT build @b66ece499ee22c4b7591190b4524013caea06c78 **
+kscd (4:15.08.0-3) unstable; urgency=medium
 
   [ Automatic packaging ]
-  ** SNAPSHOT build @acb987a0a62ee40a167bc280daf219c9331ef832 **
-
   * Bump Standards-Version to 3.9.8
   * Update build-deps and deps with the info from cmake
   * Revert "Update build-deps and deps with the info from cmake"
@@ -13,7 +9,7 @@ kscd (4:15.08.0-3~3.gbpb66ece) UNRELEASED; urgency=medium
   * Add upstream metadata (DEP-12)
   * debian/control: Update Vcs-Browser and Vcs-Git fields
 
- -- Automatic packaging <maxy+jenkins@gnuservers.com.ar>  Thu, 14 Apr 2016 14:20:56 +0200
+ -- Maximiliano Curia <maxy@debian.org>  Sat, 21 May 2016 23:26:08 +0200
 
 kscd (4:15.08.0-2) unstable; urgency=medium
 
