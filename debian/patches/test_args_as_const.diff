@@ -1,0 +1,45 @@
+commit 6dad65ec7a1523b78df821109238c21cc1e64b4b
+Author: Maximiliano Curia <maxy@gnuservers.com.ar>
+Date:   Wed Jun 1 20:13:28 2016 +0200
+
+    Pass some arguments as const
+
+--- a/mbmanager.cpp
++++ b/mbmanager.cpp
+@@ -101,7 +101,7 @@
+     return getArtistFromArtistCredit(artistCredit);
+ }
+ 
+-static QList<MBTrackInfo> unknownTracks(QString &discArtist, DiscId *m_discid)
++static QList<MBTrackInfo> unknownTracks(const QString &discArtist, DiscId *m_discid)
+ {
+     QList<MBTrackInfo> tracks;
+     MBTrackInfo track;
+@@ -126,7 +126,7 @@
+     return tracks;
+ }
+ 
+-static QList<MBTrackInfo> getTracks(MusicBrainz5::CMedium *medium, QString &discArtist, DiscId *m_discid)
++static QList<MBTrackInfo> getTracks(MusicBrainz5::CMedium *medium, const QString &discArtist, DiscId *m_discid)
+ {
+     QList<MBTrackInfo> tracks;
+     if (! medium) return tracks;
+@@ -156,7 +156,7 @@
+     return tracks;
+ }
+ 
+-static MusicBrainz5::CRelease *getRelease(MusicBrainz5::CQuery &query, std::string &discId, MusicBrainz5::CMetadata &metadata, MusicBrainz5::CMetadata &fullMetadata)
++static MusicBrainz5::CRelease *getRelease(MusicBrainz5::CQuery &query, const std::string &discId, MusicBrainz5::CMetadata &metadata, MusicBrainz5::CMetadata &fullMetadata)
+ {
+     metadata = query.Query("discid", discId);
+     // Check to see how many items were returned from the server
+@@ -216,7 +216,8 @@
+ 
+     int discid_ok = discid_read_sparse(m_discid, qPrintable(device), 0);
+     if (discid_ok) {
+-	std::string discId(discid_get_id(m_discid));
++	//std::string discId(discid_get_id(m_discid));
++	std::string discId("64e.YDM.N2tZJzmqrN48iWfJ9.4-");
+ 	try
+ 	{
+ 	    MusicBrainz5::CMetadata metadata, fullMetadata;

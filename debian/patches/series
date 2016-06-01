@@ -1,1 +1,2 @@
 migrate_to_musicbrainz5.diff
+test_args_as_const.diff
