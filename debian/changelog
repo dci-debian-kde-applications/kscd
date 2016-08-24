@@ -1,9 +1,9 @@
-kscd (4:16.08.0-0r1) UNRELEASED; urgency=medium
+kscd (4:16.08.0-1) unstable; urgency=medium
 
-  [ Pino Toscano ]
+  * Team upload.
   * New upstream release.
 
- -- Debian/Kubuntu Qt/KDE Maintainers <debian-qt-kde@lists.debian.org>  Wed, 24 Aug 2016 19:35:02 +0200
+ -- Pino Toscano <pino@debian.org>  Wed, 24 Aug 2016 19:39:52 +0200
 
 kscd (4:15.08.0-3) unstable; urgency=medium
 
