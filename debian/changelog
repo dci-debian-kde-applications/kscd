@@ -1,10 +1,11 @@
-kscd (4:16.08.1-1~1.gbpf449e0) UNRELEASED; urgency=medium
+kscd (4:16.08.1-1~2.gbpced4cf) UNRELEASED; urgency=medium
 
-  ** SNAPSHOT build @f449e0f8ca14313b69c75d3fa123e898f250771b **
+  ** SNAPSHOT build @ced4cf75cf2f7bc9a29078a75b1302cd16db1884 **
 
   * Refresh patches
+  * Refresh patches
 
- -- Automatic packaging <maxy+jenkins@gnuservers.com.ar>  Fri, 09 Sep 2016 14:34:58 +0200
+ -- Automatic packaging <maxy+jenkins@gnuservers.com.ar>  Fri, 09 Sep 2016 15:18:34 +0200
 
 kscd (4:16.08.0-1) unstable; urgency=medium
 
