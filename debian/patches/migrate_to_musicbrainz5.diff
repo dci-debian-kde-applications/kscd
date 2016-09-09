@@ -1,5 +1,5 @@
 From: Debian/Kubuntu Qt/KDE Maintainers <debian-qt-kde@lists.debian.org>
-Date: Fri, 9 Sep 2016 14:34:55 +0200
+Date: Fri, 9 Sep 2016 14:15:22 +0200
 Subject: migrate_to_musicbrainz5
 
 ---
@@ -15,12 +15,12 @@ Subject: migrate_to_musicbrainz5
  create mode 100644 cmake/FindMusicBrainz5.cmake
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index e891506..2939563 100644
+index f1a9462..32c7656 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -11,13 +11,15 @@ include_directories(${QT_INCLUDES} ${KDE4_INCLUDES})
- find_package(Alsa)
- alsa_configure_file(${CMAKE_CURRENT_BINARY_DIR}/config-alsa.h)
+@@ -8,13 +8,15 @@ include(KDE4Defaults)
+ include(MacroLibrary)
+ include_directories(${QT_INCLUDES} ${KDE4_INCLUDES})
  
 -find_package(MusicBrainz3 REQUIRED)
 +find_package(MusicBrainz5 REQUIRED)
@@ -36,7 +36,7 @@ index e891506..2939563 100644
  		)
  add_subdirectory(tests)
  ########### next target ###############
-@@ -115,7 +117,8 @@ target_link_libraries(kscd
+@@ -112,7 +114,8 @@ target_link_libraries(kscd
      ${KDE4_KIO_LIBS}
      ${KDE4_SOLID_LIBS}
      ${KDE4_PHONON_LIBS}
@@ -164,10 +164,10 @@ index 3bcb8f6..2c6d1a4 100644
  {
  	// If the track dialog is open, refresh it
 diff --git a/kscd.h b/kscd.h
-index dcbdd57..84c1c01 100644
+index 43fd653..83f8287 100644
 --- a/kscd.h
 +++ b/kscd.h
-@@ -131,6 +131,7 @@ public slots:
+@@ -130,6 +130,7 @@ public slots:
  	void configureKeys();
  
  	void discLookup();
