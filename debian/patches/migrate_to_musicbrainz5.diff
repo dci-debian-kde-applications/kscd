@@ -1,6 +1,24 @@
+From: Debian/Kubuntu Qt/KDE Maintainers <debian-qt-kde@lists.debian.org>
+Date: Fri, 9 Sep 2016 14:34:55 +0200
+Subject: migrate_to_musicbrainz5
+
+---
+ CMakeLists.txt               |   9 +-
+ cmake/FindDiscId.cmake       |  40 +++++
+ cmake/FindMusicBrainz5.cmake |  40 +++++
+ kscd.cpp                     |   7 +-
+ kscd.h                       |   1 +
+ mbmanager.cpp                | 352 +++++++++++++++++++++++++++----------------
+ mbmanager.h                  |   8 +-
+ 7 files changed, 320 insertions(+), 137 deletions(-)
+ create mode 100644 cmake/FindDiscId.cmake
+ create mode 100644 cmake/FindMusicBrainz5.cmake
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index e891506..2939563 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -11,13 +11,15 @@
+@@ -11,13 +11,15 @@ include_directories(${QT_INCLUDES} ${KDE4_INCLUDES})
  find_package(Alsa)
  alsa_configure_file(${CMAKE_CURRENT_BINARY_DIR}/config-alsa.h)
  
@@ -18,7 +36,7 @@
  		)
  add_subdirectory(tests)
  ########### next target ###############
-@@ -115,7 +117,8 @@
+@@ -115,7 +117,8 @@ target_link_libraries(kscd
      ${KDE4_KIO_LIBS}
      ${KDE4_SOLID_LIBS}
      ${KDE4_PHONON_LIBS}
@@ -28,6 +46,55 @@
      )
  
  ########### install files ###############
+diff --git a/cmake/FindDiscId.cmake b/cmake/FindDiscId.cmake
+new file mode 100644
+index 0000000..3759056
+--- /dev/null
++++ b/cmake/FindDiscId.cmake
+@@ -0,0 +1,40 @@
++# Module to find the discid library
++#
++# It defines
++#  DISCID_INCLUDE_DIR - the include dir
++#  DISCID_LIBRARIES - the required libraries
++#  DISCID_FOUND - true if both of the above have been found
++
++# Copyright (c) 2006,2007 Laurent Montel, <montel@kde.org>
++#
++# Redistribution and use is allowed according to the terms of the BSD license.
++# For details see the accompanying COPYING-CMAKE-SCRIPTS file.
++
++if(DISCID_INCLUDE_DIR AND DISCID_LIBRARIES)
++   set(DISCID_FIND_QUIETLY TRUE)
++endif(DISCID_INCLUDE_DIR AND DISCID_LIBRARIES)
++
++# use pkg-config to get the directories and then use these values
++# in the FIND_PATH() and FIND_LIBRARY() calls
++find_package(PkgConfig)
++pkg_check_modules(PC_LIBDISCID QUIET discid)
++
++FIND_PATH(DISCID_INCLUDE_DIR discid/discid.h
++          HINTS
++          ${PC_LIBDISCID_INCLUDEDIR}
++          ${PC_LIBDISCID_INCLUDE_DIRS}
++)
++
++FIND_LIBRARY( DISCID_LIBRARIES NAMES discid
++              HINTS
++              ${PC_LIBDISCID_LIBDIR}
++              ${PC_LIBDISCID_LIB_DIRS}
++)
++
++include(FindPackageHandleStandardArgs)
++find_package_handle_standard_args( DiscId DEFAULT_MSG
++                                   DISCID_INCLUDE_DIR DISCID_LIBRARIES)
++
++MARK_AS_ADVANCED(DISCID_INCLUDE_DIR DISCID_LIBRARIES)
++
++
+diff --git a/cmake/FindMusicBrainz5.cmake b/cmake/FindMusicBrainz5.cmake
+new file mode 100644
+index 0000000..81923f2
 --- /dev/null
 +++ b/cmake/FindMusicBrainz5.cmake
 @@ -0,0 +1,40 @@
@@ -71,6 +138,45 @@
 +MARK_AS_ADVANCED(MUSICBRAINZ5_INCLUDE_DIR MUSICBRAINZ5_LIBRARIES)
 +
 +
+diff --git a/kscd.cpp b/kscd.cpp
+index 3bcb8f6..2c6d1a4 100644
+--- a/kscd.cpp
++++ b/kscd.cpp
+@@ -114,7 +114,7 @@ void KSCD::setupActions()
+ 	m_uploadAction = m_actions->addAction( QLatin1String( "Upload Info" ));
+ 	m_uploadAction->setText(i18n("Upload Info"));
+ 	addAction(m_uploadAction);
+-	connect(m_uploadAction, SIGNAL(triggered()), m_MBManager, SLOT(discUpload()));
++	connect(m_uploadAction, SIGNAL(triggered()), this, SLOT(discUpload()));
+ 
+ 	//play/pause
+ 	m_playPauseAction = m_actions->addAction( QLatin1String( "Play/Pause" ));
+@@ -248,6 +248,11 @@ void KSCD::discLookup()
+ 	m_MBManager->discLookup(devices->getMedia()->currentSource().deviceName());
+ }
+ 
++void KSCD::discUpload()
++{
++	m_MBManager->discUpload(devices->getMedia()->currentSource().deviceName());
++}
++
+ void KSCD::discLookupFinished()
+ {
+ 	// If the track dialog is open, refresh it
+diff --git a/kscd.h b/kscd.h
+index dcbdd57..84c1c01 100644
+--- a/kscd.h
++++ b/kscd.h
+@@ -131,6 +131,7 @@ public slots:
+ 	void configureKeys();
+ 
+ 	void discLookup();
++	void discUpload();
+ 	void discLookupFinished();
+ 
+ private:
+diff --git a/mbmanager.cpp b/mbmanager.cpp
+index 4df3803..2b17df4 100644
 --- a/mbmanager.cpp
 +++ b/mbmanager.cpp
 @@ -32,164 +32,254 @@
@@ -109,12 +215,12 @@
 +{
 +    QString title;
 +    if (! release) return title;
- 
++
 +    title = QString::fromUtf8(release->Title().c_str());
 +    if (medium && release->MediumList()->NumItems() > 1) {
 +	title = i18n("%1 (disc %2)", title, medium->Position());
 +    }
-+
+ 
 +    return title;
  }
  
@@ -157,16 +263,10 @@
 -	try
 -	{
 -		MusicBrainz::Disc *disc = MusicBrainz::readDisc(qPrintable(device));
-+    return artist;
-+}
- 
+-
 -		MusicBrainz::Query q(ws);
 -		MusicBrainz::ReleaseResultList results;
-+static QString getArtist(MusicBrainz5::CRelease *release)
-+{
-+    QString artist;
-+    if (! release) return artist;
- 
+-
 -		try
 -		{
 -		MusicBrainz::ReleaseFilter f = MusicBrainz::ReleaseFilter().discId(disc->getId());
@@ -263,6 +363,16 @@
 -	}
 -	
 -	emit discLookupFinished();
++    return artist;
+ }
+ 
+-void MBManager::discUpload()
++static QString getArtist(MusicBrainz5::CRelease *release)
+ {
+-	showArtistLabel(m_discInfo.Artist);
++    QString artist;
++    if (! release) return artist;
++
 +    MusicBrainz5::CArtistCredit *artistCredit = release->ArtistCredit();
 +    return getArtistFromArtistCredit(artistCredit);
 +}
@@ -318,7 +428,7 @@
 +
 +	tracks << track;
 +    }
-+
+ 
 +    return tracks;
 +}
 +
@@ -367,15 +477,13 @@
 +    }
 +
 +    return medium;
- }
- 
--void MBManager::discUpload()
++}
++
 +void MBManager::discLookup(const QString &device)
- {
--	showArtistLabel(m_discInfo.Artist);
++{
 +    m_validInfo = true;
 +    MusicBrainz5::CQuery query("kscd");
- 
++
 +    if( KProtocolManager::useProxy() ) {
 +	KUrl proxy = KProtocolManager::proxyFor("http");
 +	query.SetProxyHost(proxy.host().toLatin1().constData());
@@ -423,7 +531,7 @@
 -		kDebug() << "Error: " << e.what();
 +	    kDebug() << "Caught Unknown Exception:";
 +	    m_validInfo = false;
- 	}
++	}
 +    } else {
 +	m_validInfo = false;
 +    }
@@ -438,7 +546,7 @@
 +	m_trackList.clear();
 +	if (discid_ok) {
 +	    m_trackList = unknownTracks(m_discInfo.Artist, m_discid);
-+	}
+ 	}
 +    }
 +
 +    emit discLookupFinished();
@@ -457,6 +565,8 @@
 +	kDebug() << "Error: " << discid_get_error_msg(m_discid);
 +    }
 +}
+diff --git a/mbmanager.h b/mbmanager.h
+index 6b07e95..ea04153 100644
 --- a/mbmanager.h
 +++ b/mbmanager.h
 @@ -42,6 +42,9 @@
@@ -469,7 +579,7 @@
  struct DiscInfo
  {
  	QString Title;
-@@ -64,6 +67,7 @@
+@@ -64,6 +67,7 @@ private:
  	QList <MBTrackInfo> m_trackList;	/// List of tracks information
  
  	bool m_validInfo;					/// Tells whether the lookup query succeeded
@@ -477,7 +587,7 @@
  
  public:
  	MBManager();
-@@ -82,11 +86,11 @@
+@@ -82,11 +86,11 @@ public slots:
  	void discLookup(const QString& device);
  
  	/** Uploads information */
@@ -491,79 +601,3 @@
  	void discLookupFinished();
  };
  
---- a/kscd.cpp
-+++ b/kscd.cpp
-@@ -114,7 +114,7 @@
- 	m_uploadAction = m_actions->addAction( QLatin1String( "Upload Info" ));
- 	m_uploadAction->setText(i18n("Upload Info"));
- 	addAction(m_uploadAction);
--	connect(m_uploadAction, SIGNAL(triggered()), m_MBManager, SLOT(discUpload()));
-+	connect(m_uploadAction, SIGNAL(triggered()), this, SLOT(discUpload()));
- 
- 	//play/pause
- 	m_playPauseAction = m_actions->addAction( QLatin1String( "Play/Pause" ));
-@@ -248,6 +248,11 @@
- 	m_MBManager->discLookup(devices->getMedia()->currentSource().deviceName());
- }
- 
-+void KSCD::discUpload()
-+{
-+	m_MBManager->discUpload(devices->getMedia()->currentSource().deviceName());
-+}
-+
- void KSCD::discLookupFinished()
- {
- 	// If the track dialog is open, refresh it
---- /dev/null
-+++ b/cmake/FindDiscId.cmake
-@@ -0,0 +1,40 @@
-+# Module to find the discid library
-+#
-+# It defines
-+#  DISCID_INCLUDE_DIR - the include dir
-+#  DISCID_LIBRARIES - the required libraries
-+#  DISCID_FOUND - true if both of the above have been found
-+
-+# Copyright (c) 2006,2007 Laurent Montel, <montel@kde.org>
-+#
-+# Redistribution and use is allowed according to the terms of the BSD license.
-+# For details see the accompanying COPYING-CMAKE-SCRIPTS file.
-+
-+if(DISCID_INCLUDE_DIR AND DISCID_LIBRARIES)
-+   set(DISCID_FIND_QUIETLY TRUE)
-+endif(DISCID_INCLUDE_DIR AND DISCID_LIBRARIES)
-+
-+# use pkg-config to get the directories and then use these values
-+# in the FIND_PATH() and FIND_LIBRARY() calls
-+find_package(PkgConfig)
-+pkg_check_modules(PC_LIBDISCID QUIET discid)
-+
-+FIND_PATH(DISCID_INCLUDE_DIR discid/discid.h
-+          HINTS
-+          ${PC_LIBDISCID_INCLUDEDIR}
-+          ${PC_LIBDISCID_INCLUDE_DIRS}
-+)
-+
-+FIND_LIBRARY( DISCID_LIBRARIES NAMES discid
-+              HINTS
-+              ${PC_LIBDISCID_LIBDIR}
-+              ${PC_LIBDISCID_LIB_DIRS}
-+)
-+
-+include(FindPackageHandleStandardArgs)
-+find_package_handle_standard_args( DiscId DEFAULT_MSG
-+                                   DISCID_INCLUDE_DIR DISCID_LIBRARIES)
-+
-+MARK_AS_ADVANCED(DISCID_INCLUDE_DIR DISCID_LIBRARIES)
-+
-+
---- a/kscd.h
-+++ b/kscd.h
-@@ -131,6 +131,7 @@
- 	void configureKeys();
- 
- 	void discLookup();
-+	void discUpload();
- 	void discLookupFinished();
- 
- private:
