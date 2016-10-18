@@ -1,17 +1,12 @@
-kscd (4:16.08.1-1~3.gbp36fa28) UNRELEASED; urgency=medium
-
-  ** SNAPSHOT build @36fa283626075e978fdea04301362b68a760b18b **
+kscd (4:16.08.1-1) unstable; urgency=medium
 
   [ Automatic packaging ]
-  ** SNAPSHOT build @ced4cf75cf2f7bc9a29078a75b1302cd16db1884 **
-
-  * Refresh patches
   * Refresh patches
 
   [ Maximiliano Curia ]
-  * Tests args as const
+  * New upstream release (16.08.1)
 
- -- Maximiliano Curia <maxy@gnuservers.com.ar>  Sat, 10 Sep 2016 20:00:40 +0200
+ -- Maximiliano Curia <maxy@debian.org>  Tue, 18 Oct 2016 23:59:43 +0200
 
 kscd (4:16.08.0-1) unstable; urgency=medium
 
