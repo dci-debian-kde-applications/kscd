@@ -1,12 +1,21 @@
+From: Maximiliano Curia <maxy@gnuservers.com.ar>
+Date: Wed, 8 Mar 2017 11:35:09 +0100
+Subject: test_args_as_const
+
 commit 6dad65ec7a1523b78df821109238c21cc1e64b4b
 Author: Maximiliano Curia <maxy@gnuservers.com.ar>
 Date:   Wed Jun 1 20:13:28 2016 +0200
 
     Pass some arguments as const
+---
+ mbmanager.cpp | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
+diff --git a/mbmanager.cpp b/mbmanager.cpp
+index 2b17df4..d3e1775 100644
 --- a/mbmanager.cpp
 +++ b/mbmanager.cpp
-@@ -101,7 +101,7 @@
+@@ -101,7 +101,7 @@ static QString getArtist(MusicBrainz5::CRelease *release)
      return getArtistFromArtistCredit(artistCredit);
  }
  
@@ -15,7 +24,7 @@ Date:   Wed Jun 1 20:13:28 2016 +0200
  {
      QList<MBTrackInfo> tracks;
      MBTrackInfo track;
-@@ -126,7 +126,7 @@
+@@ -126,7 +126,7 @@ static QList<MBTrackInfo> unknownTracks(QString &discArtist, DiscId *m_discid)
      return tracks;
  }
  
@@ -24,7 +33,7 @@ Date:   Wed Jun 1 20:13:28 2016 +0200
  {
      QList<MBTrackInfo> tracks;
      if (! medium) return tracks;
-@@ -156,7 +156,7 @@
+@@ -156,7 +156,7 @@ static QList<MBTrackInfo> getTracks(MusicBrainz5::CMedium *medium, QString &disc
      return tracks;
  }
  
@@ -33,13 +42,3 @@ Date:   Wed Jun 1 20:13:28 2016 +0200
  {
      metadata = query.Query("discid", discId);
      // Check to see how many items were returned from the server
-@@ -216,7 +216,8 @@
- 
-     int discid_ok = discid_read_sparse(m_discid, qPrintable(device), 0);
-     if (discid_ok) {
--	std::string discId(discid_get_id(m_discid));
-+	//std::string discId(discid_get_id(m_discid));
-+	std::string discId("64e.YDM.N2tZJzmqrN48iWfJ9.4-");
- 	try
- 	{
- 	    MusicBrainz5::CMetadata metadata, fullMetadata;
