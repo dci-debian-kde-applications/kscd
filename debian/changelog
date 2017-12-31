@@ -1,3 +1,10 @@
+kscd (4:17.08.3-0r1) UNRELEASED; urgency=medium
+
+  [ Pino Toscano ]
+  * New upstream release.
+
+ -- Debian/Kubuntu Qt/KDE Maintainers <debian-qt-kde@lists.debian.org>  Sun, 31 Dec 2017 19:41:39 +0100
+
 kscd (4:16.08.1-2) unstable; urgency=medium
 
   * Update patch: test_args_as_const.diff.
